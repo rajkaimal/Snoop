@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="720" viewBox="0 0 1000 720" font-family="-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Noto Sans&#x27;, Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+<title id="title">Snoop architecture</title>
+<desc id="desc">Browsers and apps send traffic to the proxy engine (listener, TLS interceptor, rules and breakpoints, upstream client), which talks to internet servers and Windows services, and reports events to the session store. The session store feeds the WinUI 3 app live and is saved as snapshots and HAR files.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+<rect x="20" y="20" width="320" height="70" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="45.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Browsers and apps</text>
+<text x="180.0" y="64.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">follow the Windows proxy setting</text>
+<rect x="20" y="120" width="320" height="430" rx="10" fill="#0d1117" stroke="#3d444d"/>
+<text x="40" y="149" font-size="15" font-weight="600" fill="#e6edf3">Proxy engine</text>
+<rect x="40" y="165" width="280" height="72" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="191.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Listener</text>
+<text x="180.0" y="210.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">127.0.0.1:8866, CONNECT</text>
+<rect x="40" y="260" width="280" height="72" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="286.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">TLS interceptor</text>
+<text x="180.0" y="305.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">per-host certificates from a local CA</text>
+<rect x="40" y="355" width="280" height="72" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="381.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Rules and breakpoints</text>
+<text x="180.0" y="400.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">block, mock, rewrite, pause, edit</text>
+<rect x="40" y="450" width="280" height="72" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="476.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Upstream client</text>
+<text x="180.0" y="495.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">SocketsHttpHandler, HTTP/2</text>
+<rect x="20" y="585" width="320" height="70" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="180.0" y="610.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Internet servers</text>
+<text x="180.0" y="629.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">real TLS, HTTP/1.1 or HTTP/2</text>
+<rect x="410" y="165" width="290" height="110" rx="8" fill="#0d2a4a" stroke="#4493f8" stroke-width="2"/>
+<text x="555.0" y="191.5" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Session store</text>
+<text x="555.0" y="210.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">every request and response</text>
+<text x="555.0" y="229.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">in-memory index</text>
+<text x="555.0" y="248.5" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">large bodies spill to disk</text>
+<rect x="410" y="315" width="290" height="90" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="555.0" y="341.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="600" fill="#e6edf3">Snapshots and HAR</text>
+<text x="555.0" y="360.0" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">save, open, export</text>
+<text x="555.0" y="379.0" dominant-baseline="central" text-anchor="middle" font-size="13" fill="#9198a1">.snoop (zip + JSON), HAR 1.2</text>
+<rect x="760" y="120" width="220" height="430" rx="10" fill="#0d1117" stroke="#3d444d"/>
+<text x="780" y="149" font-size="15" font-weight="600" fill="#e6edf3">WinUI 3 app (MVVM)</text>
+<rect x="780" y="165" width="180" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="870.0" y="193.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Session grid</text>
+<rect x="780" y="240" width="180" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="870.0" y="268.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Inspectors</text>
+<rect x="780" y="315" width="180" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="870.0" y="343.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Filters and search</text>
+<rect x="780" y="390" width="180" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="870.0" y="418.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Rules editor</text>
+<rect x="780" y="465" width="180" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="870.0" y="493.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Composer</text>
+<rect x="410" y="585" width="570" height="115" rx="10" fill="#0d1117" stroke="#3d444d"/>
+<text x="430" y="614" font-size="15" font-weight="600" fill="#e6edf3">Windows services</text>
+<rect x="430" y="628" width="160" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="510.0" y="656.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Proxy setting</text>
+<rect x="615" y="628" width="160" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="695.0" y="656.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Process owner</text>
+<rect x="800" y="628" width="160" height="56" rx="8" fill="#161b22" stroke="#3d444d" stroke-width="1"/>
+<text x="880.0" y="656.0" dominant-baseline="central" text-anchor="middle" font-size="15" font-weight="400" fill="#e6edf3">Certificate store</text>
+<path d="M180,90 L180,163" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M180,237 L180,258" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M180,332 L180,353" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M180,427 L180,448" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M180,522 L180,583" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340,220 L408,220" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="374" y="210" text-anchor="middle" font-size="13" fill="#9198a1">events</text>
+<path d="M700,220 L758,220" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="729" y="210" text-anchor="middle" font-size="13" fill="#9198a1">live</text>
+<path d="M555,275 L555,313" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340,486 L375,486 L375,656 L408,656" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>
