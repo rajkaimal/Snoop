@@ -118,7 +118,29 @@ public sealed class SnoopApp : IDisposable
     /// <summary>The state the search tests look at, for failure messages.</summary>
     public string Describe() => $"count \"{CountText}\", search \"{SearchBox.Text}\", selected rows [{string.Join(", ", SelectedRows)}], focus \"{FocusedId}\"";
 
-    public string? FocusedId => Automation.FocusedElement()?.AutomationId;
+    /// <summary>
+    /// The automation ID of the focused element, or "" when it has none (FlaUI's AutomationId property
+    /// throws for elements without one, such as a focused list row).
+    /// </summary>
+    public string? FocusedId => Automation.FocusedElement()?.Properties.AutomationId.ValueOrDefault ?? string.Empty;
+
+    /// <summary>True when the keyboard focus is on the session list or one of its rows.</summary>
+    public bool FocusIsInSessionList
+    {
+        get
+        {
+            var walker = Automation.TreeWalkerFactory.GetControlViewWalker();
+            for (var element = Automation.FocusedElement(); element is not null; element = walker.GetParent(element))
+            {
+                if (element.Properties.AutomationId.ValueOrDefault == "SessionList")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 
     public AutomationElement? ById(string id) => Window.FindFirstDescendant(cf => cf.ByAutomationId(id));
 

@@ -64,7 +64,7 @@ public sealed class KeyboardShortcutTests : IDisposable
         Assert.Equal("SearchBox", _snoop.FocusedId);
 
         SnoopApp.Press(Escape);
-        SnoopApp.WaitUntil(() => _snoop.FocusedId != "SearchBox", "a second Esc to leave the search box", actual: _snoop.Describe);
+        SnoopApp.WaitUntil(() => _snoop.FocusIsInSessionList, "a second Esc to move the focus to the session list", actual: _snoop.Describe);
     }
 
     [Fact]
