@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Session model, storage and shared utilities. No networking, no UI, no Windows APIs. -->
+  <PropertyGroup>
+    <RootNamespace>Snoop.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Proxy" />
+    <InternalsVisibleTo Include="Snoop.Core.Tests" />
+    <InternalsVisibleTo Include="Snoop.Proxy.Tests" />
+    <InternalsVisibleTo Include="Snoop.Cli.Tests" />
+    <InternalsVisibleTo Include="Snoop.Inspection.Tests" />
+    <InternalsVisibleTo Include="Snoop.Presentation.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!-- Kestrel hosts the local test servers used by the integration tests. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Snoop.Core\Snoop.Core.csproj" />
+    <ProjectReference Include="..\..\src\Snoop.Proxy\Snoop.Proxy.csproj" />
+  </ItemGroup>
+
+</Project>

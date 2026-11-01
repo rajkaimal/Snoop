@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Snoop.App.Views.BreakpointsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Snoop.Presentation.ViewModels"
+    xmlns:helpers="using:Snoop.App.Helpers">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="PausedTemplate" x:DataType="vm:PausedItemViewModel">
+            <Grid ColumnSpacing="8" Padding="0,3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind StageText}" Style="{StaticResource CellText}" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{x:Bind Method}" Style="{StaticResource CellText}" />
+                <TextBlock Grid.Column="2" Text="{x:Bind Url}" Style="{StaticResource CellText}" />
+                <TextBlock Grid.Column="3" Text="{x:Bind PausedAtText}" Style="{StaticResource CellText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowSpacing="6" Padding="0,8,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Switches -->
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <CheckBox Content="Pause requests" IsChecked="{x:Bind ViewModel.BreakOnRequests, Mode=TwoWay}" MinWidth="0" />
+            <CheckBox Grid.Column="1" Content="Pause responses" IsChecked="{x:Bind ViewModel.BreakOnResponses, Mode=TwoWay}" MinWidth="0" />
+            <TextBox
+                Grid.Column="2"
+                PlaceholderText="Only URLs containing... (empty = all)"
+                Text="{x:Bind ViewModel.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                FontFamily="{StaticResource MonoFont}"
+                IsSpellCheckEnabled="False"
+                VerticalAlignment="Center" />
+        </Grid>
+
+        <TextBlock
+            Grid.Row="1"
+            Text="Paused traffic waits here until you resume it. Apps may time out if you take too long."
+            TextWrapping="Wrap"
+            FontSize="12"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <ListView
+            Grid.Row="2"
+            ItemsSource="{x:Bind ViewModel.Pending, Mode=OneWay}"
+            SelectedIndex="{x:Bind ViewModel.SelectedIndex, Mode=TwoWay}"
+            ItemTemplate="{StaticResource PausedTemplate}"
+            ItemContainerStyle="{StaticResource CompactListItemStyle}"
+            SelectionMode="Single"
+            MaxHeight="150"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <!-- Editor for the selected paused exchange -->
+        <Grid Grid.Row="3" RowSpacing="6" Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(ViewModel.HasSelection), Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="3*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="{x:Bind ViewModel.EditorTitle, Mode=OneWay}" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
+            <TextBlock
+                Grid.Row="1"
+                Text="Start line and headers (Content-Length is set for you)"
+                Style="{StaticResource SectionLabel}" />
+            <TextBox
+                Grid.Row="2"
+                Style="{StaticResource CodeEditor}"
+                TextWrapping="NoWrap"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                Text="{x:Bind ViewModel.HeadText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <StackPanel Grid.Row="3" Spacing="2">
+                <TextBlock Text="Body" Style="{StaticResource SectionLabel}" />
+                <TextBlock
+                    Text="{x:Bind ViewModel.BodyNote, Mode=OneWay}"
+                    FontSize="12"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(ViewModel.HasBodyNote), Mode=OneWay}" />
+            </StackPanel>
+            <TextBox
+                Grid.Row="4"
+                Style="{StaticResource CodeEditor}"
+                IsReadOnly="{x:Bind ViewModel.IsBodyReadOnly, Mode=OneWay}"
+                Text="{x:Bind ViewModel.BodyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock
+                Grid.Row="5"
+                Text="{x:Bind ViewModel.ErrorText, Mode=OneWay}"
+                Foreground="{x:Bind helpers:UiHelpers.MessageBrush(ViewModel.HasError), Mode=OneWay}"
+                TextWrapping="Wrap"
+                FontSize="12"
+                Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(ViewModel.HasError), Mode=OneWay}" />
+            <StackPanel Grid.Row="6" Orientation="Horizontal" Spacing="6" Padding="0,0,0,6">
+                <Button Content="Resume" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.ResumeCommand, Mode=OneWay}" />
+                <Button Content="Abort" Command="{x:Bind ViewModel.AbortCommand, Mode=OneWay}" />
+                <Button Content="Resume all" Command="{x:Bind ViewModel.ResumeAllCommand, Mode=OneWay}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

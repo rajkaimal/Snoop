@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- View models for the desktop app. Plain .NET with no UI framework types, so all behaviour is unit-tested;
+       the WinUI project only adds XAML and thin platform services. -->
+  <PropertyGroup>
+    <RootNamespace>Snoop.Presentation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snoop.Hosting\Snoop.Hosting.csproj" />
+    <ProjectReference Include="..\Snoop.Inspection\Snoop.Inspection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Presentation.Tests" />
+  </ItemGroup>
+
+</Project>

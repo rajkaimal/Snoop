@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The intercepting proxy engine: listener, HTTP/1.1 parsing, TLS interception, upstream forwarding. -->
+  <PropertyGroup>
+    <RootNamespace>Snoop.Proxy</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snoop.Core\Snoop.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Proxy.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Snoop.App.Views.TimelineView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Snoop.Presentation.ViewModels"
+    xmlns:helpers="using:Snoop.App.Helpers">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="SendBrush" Color="#FF94A3B8" />
+        <SolidColorBrush x:Key="WaitBrush" Color="#FFF59E0B" />
+        <SolidColorBrush x:Key="ReceiveBrush" Color="#FF3B82F6" />
+
+        <DataTemplate x:Key="BarTemplate" x:DataType="vm:TimelineRow">
+            <Grid ColumnSpacing="8" Padding="0,1" ToolTipService.ToolTip="{x:Bind Detail}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Label}" Style="{StaticResource CellText}" Foreground="{x:Bind helpers:UiHelpers.CategoryBrush(Category)}" />
+                <Grid Grid.Column="1" Height="10" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Star(Offset)}" />
+                        <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Star(Send)}" />
+                        <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Star(Wait)}" />
+                        <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Star(Receive)}" />
+                        <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Star(After)}" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.Column="1" Fill="{StaticResource SendBrush}" />
+                    <Rectangle Grid.Column="2" Fill="{StaticResource WaitBrush}" />
+                    <Rectangle Grid.Column="3" Fill="{StaticResource ReceiveBrush}" />
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowSpacing="6" Padding="0,8,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Content="Refresh" Command="{x:Bind ViewModel.RefreshTimelineCommand, Mode=OneWay}" />
+            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <Rectangle Width="12" Height="10" Fill="{StaticResource SendBrush}" />
+                <TextBlock Text="send" FontSize="12" Margin="0,0,8,0" />
+                <Rectangle Width="12" Height="10" Fill="{StaticResource WaitBrush}" />
+                <TextBlock Text="wait for first byte" FontSize="12" Margin="0,0,8,0" />
+                <Rectangle Width="12" Height="10" Fill="{StaticResource ReceiveBrush}" />
+                <TextBlock Text="receive" FontSize="12" />
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.Timeline.RangeText, Mode=OneWay}" FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <ListView
+            Grid.Row="2"
+            ItemsSource="{x:Bind ViewModel.Timeline.Rows, Mode=OneWay}"
+            ItemTemplate="{StaticResource BarTemplate}"
+            ItemContainerStyle="{StaticResource CompactListItemStyle}"
+            SelectionMode="None"
+            IsItemClickEnabled="True"
+            ItemClick="OnItemClick" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Windows integration: system proxy (WinINET), DPAPI, certificate store, process lookup. -->
+  <PropertyGroup>
+    <RootNamespace>Snoop.Platform</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snoop.Core\Snoop.Core.csproj" />
+    <ProjectReference Include="..\Snoop.Proxy\Snoop.Proxy.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Platform.Tests" />
+  </ItemGroup>
+
+</Project>

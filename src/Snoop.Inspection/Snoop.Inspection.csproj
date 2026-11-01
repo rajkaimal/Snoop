@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Turns captured sessions into things people read and share: decoded bodies, pretty JSON/XML,
+       hex dumps, raw messages, cURL commands, HAR files, and session filters. No UI code. -->
+  <PropertyGroup>
+    <RootNamespace>Snoop.Inspection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snoop.Core\Snoop.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Inspection.Tests" />
+  </ItemGroup>
+
+</Project>

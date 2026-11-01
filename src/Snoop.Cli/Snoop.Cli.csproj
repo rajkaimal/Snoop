@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Headless host for the proxy engine (milestone 1). Produces snoop.exe. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Snoop.Cli</RootNamespace>
+    <AssemblyName>snoop</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snoop.Core\Snoop.Core.csproj" />
+    <ProjectReference Include="..\Snoop.Proxy\Snoop.Proxy.csproj" />
+    <ProjectReference Include="..\Snoop.Platform\Snoop.Platform.csproj" />
+    <ProjectReference Include="..\Snoop.Hosting\Snoop.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snoop.Cli.Tests" />
+  </ItemGroup>
+
+</Project>

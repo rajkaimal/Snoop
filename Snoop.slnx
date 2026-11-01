@@ -1,0 +1,31 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Snoop.Core/Snoop.Core.csproj" />
+    <Project Path="src/Snoop.Proxy/Snoop.Proxy.csproj" />
+    <Project Path="src/Snoop.Platform/Snoop.Platform.csproj" />
+    <Project Path="src/Snoop.Hosting/Snoop.Hosting.csproj" />
+    <Project Path="src/Snoop.Inspection/Snoop.Inspection.csproj" />
+    <Project Path="src/Snoop.Presentation/Snoop.Presentation.csproj" />
+    <Project Path="src/Snoop.Cli/Snoop.Cli.csproj" />
+    <Project Path="src/Snoop.App/Snoop.App.csproj">
+      <Platform Project="x64" />
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Snoop.Core.Tests/Snoop.Core.Tests.csproj" />
+    <Project Path="tests/Snoop.Proxy.Tests/Snoop.Proxy.Tests.csproj" />
+    <Project Path="tests/Snoop.Platform.Tests/Snoop.Platform.Tests.csproj" />
+    <Project Path="tests/Snoop.Hosting.Tests/Snoop.Hosting.Tests.csproj" />
+    <Project Path="tests/Snoop.Inspection.Tests/Snoop.Inspection.Tests.csproj" />
+    <Project Path="tests/Snoop.Presentation.Tests/Snoop.Presentation.Tests.csproj" />
+    <Project Path="tests/Snoop.Cli.Tests/Snoop.Cli.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

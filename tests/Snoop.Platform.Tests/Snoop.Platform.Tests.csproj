@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Snoop.Platform\Snoop.Platform.csproj" />
+  </ItemGroup>
+
+</Project>
