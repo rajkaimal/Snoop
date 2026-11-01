@@ -214,6 +214,8 @@ public sealed class MessageViewModel(string emptyText) : ObservableObject
     private string _rawText = string.Empty;
     private BodyViewMode _bodyMode = BodyViewMode.Auto;
     private RenderedBody _renderedBody = RenderedBody.None;
+    private RenderedBody? _spansFor;
+    private IReadOnlyList<SyntaxSpan>? _spans;
 
     public static IReadOnlyList<BodyViewMode> BodyModes { get; } = Enum.GetValues<BodyViewMode>();
 
@@ -304,9 +306,47 @@ public sealed class MessageViewModel(string emptyText) : ObservableObject
                 OnPropertyChanged(nameof(ImageBytes));
                 OnPropertyChanged(nameof(IsImage));
                 OnPropertyChanged(nameof(IsTextBody));
+                OnPropertyChanged(nameof(BodySpans));
+                OnPropertyChanged(nameof(HasColoredBody));
+                OnPropertyChanged(nameof(IsPlainTextBody));
             }
         }
     }
+
+    /// <summary>
+    /// Coloured runs for JSON, XML and HTML bodies, or null when the body is shown as plain text (other
+    /// content, hex, or too long to colour quickly). Worked out when first asked for.
+    /// </summary>
+    public IReadOnlyList<SyntaxSpan>? BodySpans
+    {
+        get
+        {
+            if (!ReferenceEquals(_spansFor, _renderedBody))
+            {
+                _spansFor = _renderedBody;
+                var language = LanguageOf(_renderedBody);
+                _spans = language == SyntaxLanguage.None || _renderedBody.Text.Length == 0 || _renderedBody.Text.Length > SyntaxHighlighter.MaxChars
+                    ? null
+                    : SyntaxHighlighter.Highlight(_renderedBody.Text, language);
+            }
+
+            return _spans;
+        }
+    }
+
+    /// <summary>Show the coloured view instead of the plain text box.</summary>
+    public bool HasColoredBody => !IsImage && BodySpans is not null;
+
+    /// <summary>Show the plain text box (text that is not coloured, and hex).</summary>
+    public bool IsPlainTextBody => !IsImage && BodySpans is null;
+
+    private static SyntaxLanguage LanguageOf(RenderedBody body) => body.Mode switch
+    {
+        BodyViewMode.Json => SyntaxLanguage.Json,
+        BodyViewMode.Xml => SyntaxLanguage.Markup,
+        BodyViewMode.Text when body.Kind is ContentKind.Html or ContentKind.Xml => SyntaxLanguage.Markup,
+        _ => SyntaxLanguage.None,
+    };
 
     public string BodyText => _renderedBody.Text;
 

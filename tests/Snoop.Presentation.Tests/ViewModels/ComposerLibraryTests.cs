@@ -379,3 +379,41 @@ public sealed class ComposerFeatureTests : IAsyncLifetime
         Assert.Same(row, _vm.Headers[0]);
     }
 }
+
+public sealed class ColoredBodyTests
+{
+    private static MessageViewModel Show(string contentType, string body)
+    {
+        var vm = new MessageViewModel("none");
+        var headers = new Snoop.Core.Http.HttpHeaderList();
+        headers.Add("Content-Type", contentType);
+        vm.Load(headers, Snoop.Core.Bodies.CapturedBody.FromBytes(Encoding.UTF8.GetBytes(body)), "raw", []);
+        return vm;
+    }
+
+    [Fact]
+    public void Json_xml_and_html_are_coloured()
+    {
+        Assert.True(Show("application/json", "{\"a\":1}").HasColoredBody);
+        Assert.True(Show("application/xml", "<a>1</a>").HasColoredBody);
+        Assert.True(Show("text/html", "<p>hi</p>").HasColoredBody);
+        var json = Show("application/json", "{\"a\":1}");
+        Assert.False(json.IsPlainTextBody);
+        Assert.Contains(json.BodySpans!, s => s.Kind == Snoop.Inspection.Formatting.SyntaxKind.Key);
+    }
+
+    [Fact]
+    public void Other_text_hex_and_long_bodies_stay_plain()
+    {
+        Assert.False(Show("text/plain", "hello").HasColoredBody);
+        Assert.True(Show("text/plain", "hello").IsPlainTextBody);
+
+        var json = Show("application/json", "{\"a\":1}");
+        json.BodyMode = Snoop.Inspection.Bodies.BodyViewMode.Hex;
+        Assert.False(json.HasColoredBody);
+        Assert.True(json.IsPlainTextBody);
+
+        var big = "[" + string.Join(",", Enumerable.Repeat("12345", 30_000)) + "]";
+        Assert.False(Show("application/json", big).HasColoredBody);
+    }
+}

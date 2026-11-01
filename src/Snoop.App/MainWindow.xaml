@@ -280,7 +280,7 @@
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.MethodWidth), Mode=OneWay}" />
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.ProtocolWidth), Mode=OneWay}" />
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.HostWidth), Mode=OneWay}" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" MinWidth="120" /> <!-- Path: never squeezed to nothing; columns to its right clip first -->
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.SizeWidth), Mode=OneWay}" />
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.TimeWidth), Mode=OneWay}" />
                         <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(ViewModel.Sessions.Columns.ProcessWidth), Mode=OneWay}" />
@@ -393,7 +393,7 @@
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.MethodWidth), Mode=OneWay}" />
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.ProtocolWidth), Mode=OneWay}" />
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.HostWidth), Mode=OneWay}" />
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" MinWidth="120" />
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.SizeWidth), Mode=OneWay}" />
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.TimeWidth), Mode=OneWay}" />
                                     <ColumnDefinition Width="{x:Bind helpers:UiHelpers.Px(Columns.ProcessWidth), Mode=OneWay}" />

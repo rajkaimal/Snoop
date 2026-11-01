@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Snoop.App.Helpers;
 using Snoop.Presentation.ViewModels;
 
@@ -9,7 +10,7 @@ namespace Snoop.App.Views;
 public sealed partial class MessageView : UserControl
 {
     public static readonly DependencyProperty MessageProperty = DependencyProperty.Register(
-        nameof(Message), typeof(MessageViewModel), typeof(MessageView), new PropertyMetadata(null));
+        nameof(Message), typeof(MessageViewModel), typeof(MessageView), new PropertyMetadata(null, OnMessageChanged));
 
     /// <summary>Search text to highlight in header and parameter rows.</summary>
     public static readonly DependencyProperty HighlightTextProperty = DependencyProperty.Register(
@@ -20,6 +21,8 @@ public sealed partial class MessageView : UserControl
         InitializeComponent();
         HeadersPanel.ContainerContentChanging += OnRowContentChanging;
         ParamsPanel.ContainerContentChanging += OnRowContentChanging;
+        ActualThemeChanged += (_, _) => RenderColoredBody();
+        Loaded += (_, _) => RenderColoredBody(); // in case the message arrived before the view was built
         Loaded += (_, _) =>
         {
             // Query parameters only make sense for requests.
@@ -78,6 +81,66 @@ public sealed partial class MessageView : UserControl
                 }
             }
         }
+    }
+
+    private static void OnMessageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var view = (MessageView)d;
+        if (e.OldValue is MessageViewModel old)
+        {
+            old.PropertyChanged -= view.OnMessagePropertyChanged;
+        }
+
+        if (e.NewValue is MessageViewModel message)
+        {
+            message.PropertyChanged += view.OnMessagePropertyChanged;
+        }
+
+        view.RenderColoredBody();
+    }
+
+    private void OnMessagePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MessageViewModel.BodySpans) or "" or null)
+        {
+            RenderColoredBody();
+        }
+    }
+
+    /// <summary>Fills the coloured body view: one run per span, coloured for the current theme.</summary>
+    private void RenderColoredBody()
+    {
+        if (ColoredBody is null)
+        {
+            return;
+        }
+
+        ColoredBody.Blocks.Clear();
+        if (Message is not { } message || message.BodySpans is not { } spans)
+        {
+            return;
+        }
+
+        var text = message.BodyText;
+        var dark = ActualTheme == ElementTheme.Dark;
+        var paragraph = new Paragraph();
+        foreach (var span in spans)
+        {
+            if (span.Start + span.Length > text.Length)
+            {
+                break;
+            }
+
+            var run = new Run { Text = text.Substring(span.Start, span.Length).Replace("\r\n", "\n", StringComparison.Ordinal) };
+            if (SyntaxColors.For(span.Kind, dark) is { } brush)
+            {
+                run.Foreground = brush;
+            }
+
+            paragraph.Inlines.Add(run);
+        }
+
+        ColoredBody.Blocks.Add(paragraph);
     }
 
     /// <summary>The row template is a Grid of two TextBlocks (name, value).</summary>

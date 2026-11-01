@@ -81,7 +81,23 @@
                         Grid.Row="1"
                         Style="{StaticResource CodeBox}"
                         Text="{x:Bind Message.BodyText, Mode=OneWay}"
-                        Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(Message.IsTextBody), Mode=OneWay}" />
+                        Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(Message.IsPlainTextBody), Mode=OneWay}" />
+
+                    <!-- JSON, XML and HTML in colour (filled in code-behind; plain text above is the fallback). -->
+                    <Border
+                        Grid.Row="1"
+                        Background="{ThemeResource TextControlBackground}"
+                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                        Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(Message.HasColoredBody), Mode=OneWay}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="11,6,11,6">
+                            <RichTextBlock
+                                x:Name="ColoredBody"
+                                FontFamily="{StaticResource MonoFont}"
+                                FontSize="12"
+                                TextWrapping="Wrap"
+                                IsTextSelectionEnabled="True" />
+                        </ScrollViewer>
+                    </Border>
 
                     <ScrollViewer
                         Grid.Row="1"
