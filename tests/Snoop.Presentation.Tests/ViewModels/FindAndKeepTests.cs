@@ -308,6 +308,7 @@ public sealed class LaunchOptionsTests
         var adjusted = new LaunchOptions { TestMode = true }.Adjust(settings);
         Assert.False(adjusted.CaptureOnStartup);
         Assert.False(adjusted.UseSystemProxy);
+        Assert.False(adjusted.DecryptHttps);
         Assert.Same(settings, new LaunchOptions().Adjust(settings));
     }
 }

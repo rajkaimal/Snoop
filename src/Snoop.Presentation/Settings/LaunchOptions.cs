@@ -53,10 +53,13 @@ public sealed record LaunchOptions
         return options;
     }
 
-    /// <summary>Settings to run with: in test mode capture never starts and the system proxy is left alone.</summary>
+    /// <summary>
+    /// Settings to run with. In test mode capture never starts, the system proxy is left alone and HTTPS
+    /// decryption is off (so no root certificate is needed and the "trust the certificate" banner stays away).
+    /// </summary>
     public AppSettings Adjust(AppSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        return TestMode ? settings with { CaptureOnStartup = false, UseSystemProxy = false } : settings;
+        return TestMode ? settings with { CaptureOnStartup = false, UseSystemProxy = false, DecryptHttps = false } : settings;
     }
 }

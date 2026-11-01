@@ -122,23 +122,26 @@ public sealed class SnoopApp : IDisposable
         Thread.Sleep(300); // the list refilters after typing
     }
 
-    /// <summary>Clicks a row; with <paramref name="control"/>, adds it to the selection.</summary>
+    /// <summary>
+    /// Selects a row as a click would (with <paramref name="control"/>, adds it to the selection) and puts
+    /// the keyboard focus on it. Uses UI Automation rather than the mouse, so display scaling and window
+    /// position cannot make it miss.
+    /// </summary>
     public void ClickRow(int index, bool control = false)
     {
         var row = Rows[index];
         if (control)
         {
-            using (Keyboard.Pressing(Keys.Control))
-            {
-                row.Click();
-            }
+            row.AddToSelection();
         }
         else
         {
-            row.Click();
+            row.Select();
         }
 
+        row.Focus();
         Wait.UntilInputIsProcessed();
+        WaitUntil(() => Rows[index].IsSelected, $"row {index} to be selected");
         Thread.Sleep(150);
     }
 
