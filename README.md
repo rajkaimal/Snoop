@@ -179,6 +179,55 @@ and it is restored:
 4. at your next Windows logon, via a one-shot `RunOnce` entry (covers a hard kill),
 5. manually, with `snoop restore-proxy`.
 
+## How it works
+
+All traffic flows through one local proxy; the app and the command line only read the recorded sessions.
+
+```mermaid
+flowchart TB
+    clients["<b>Browsers and apps</b><br/>follow the Windows proxy setting"]
+
+    subgraph engine["Proxy engine"]
+        direction TB
+        listener["<b>Listener</b><br/>127.0.0.1:8866, CONNECT"]
+        tls["<b>TLS interceptor</b><br/>per-host certificates from a local CA"]
+        rules["<b>Rules and breakpoints</b><br/>block, mock, rewrite, pause and edit"]
+        upstream["<b>Upstream client</b><br/>SocketsHttpHandler, HTTP/2"]
+        listener --> tls --> rules --> upstream
+    end
+
+    servers["<b>Internet servers</b><br/>real TLS, HTTP/1.1 or HTTP/2"]
+
+    store["<b>Session store</b><br/>every request and response<br/>in-memory index<br/>large bodies spill to disk"]
+    files["<b>Snapshots and HAR</b><br/>save, open, export<br/>.snoop (zip + JSON), HAR 1.2"]
+
+    subgraph app["WinUI 3 app (MVVM)"]
+        direction TB
+        grid["Session grid"]
+        inspectors["Inspectors"]
+        filters["Filters and search"]
+        ruleseditor["Rules editor"]
+        composer["Composer"]
+    end
+
+    subgraph windows["Windows services"]
+        direction TB
+        proxysetting["Proxy setting"]
+        process["Process owner"]
+        certstore["Certificate store"]
+    end
+
+    clients --> listener
+    upstream --> servers
+    engine -- events --> store
+    store -- live --> app
+    store --> files
+    engine --> windows
+
+    classDef focus stroke:#3b82f6,stroke-width:2px
+    class store focus
+```
+
 ## Project layout
 
 ```
