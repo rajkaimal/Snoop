@@ -1,3 +1,4 @@
+using FlaUI.Core.AutomationElements;
 using static Snoop.App.UITests.Keys;
 
 namespace Snoop.App.UITests;
