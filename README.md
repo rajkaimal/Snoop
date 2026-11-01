@@ -5,6 +5,11 @@ on your PC. It runs a local intercepting proxy, decrypts HTTPS with a root certi
 your machine, and shows every request and response as it happens. It comes as a desktop app
 (`Snoop.exe`, WinUI 3) and a command-line tool (`snoop.exe`).
 
+![Snoop: the session list with results coloured by status, and the selected request's headers in the inspector](docs/screenshot.png)
+
+To look around without capturing anything, open [`docs/demo.snoop`](docs/demo.snoop) with Ctrl+O: 15 sample
+sessions with JSON, HTML, an image, cache hits and errors, a WebSocket, a rule-answered request and a Composer request.
+
 ## The desktop app
 
 ```powershell
