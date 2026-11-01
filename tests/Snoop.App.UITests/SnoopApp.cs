@@ -80,7 +80,10 @@ public sealed class SnoopApp : IDisposable
     /// <summary>The title of the open tool ("Composer", "Rules"...), or null while Inspect is shown.</summary>
     public string? ToolTitle => ById("ToolTitle")?.Name;
 
-    /// <summary>The text of the info bar under the toolbar (its automation name is the message).</summary>
+    /// <summary>
+    /// Everything the info bar under the toolbar says. Its message text sits in the raw UI Automation view
+    /// (not the control view FindAllDescendants searches), so this walks the raw tree.
+    /// </summary>
     public string MessageText
     {
         get
@@ -91,10 +94,29 @@ public sealed class SnoopApp : IDisposable
                 return string.Empty;
             }
 
-            var texts = bar.FindAllDescendants(cf => cf.ByControlType(ControlType.Text)).Select(t => t.Name);
-            return string.Join(" ", texts.Prepend(bar.Name));
+            var names = new List<string>();
+            var walker = Automation.TreeWalkerFactory.GetRawViewWalker();
+            void Walk(AutomationElement element, int depth)
+            {
+                names.Add(element.Properties.Name.ValueOrDefault ?? string.Empty);
+                if (depth > 8)
+                {
+                    return;
+                }
+
+                for (var child = walker.GetFirstChild(element); child is not null; child = walker.GetNextSibling(child))
+                {
+                    Walk(child, depth + 1);
+                }
+            }
+
+            Walk(bar, 0);
+            return string.Join(" | ", names.Where(n => n.Length > 0));
         }
     }
+
+    /// <summary>The state the search tests look at, for failure messages.</summary>
+    public string Describe() => $"count \"{CountText}\", search \"{SearchBox.Text}\", selected rows [{string.Join(", ", SelectedRows)}], focus \"{FocusedId}\"";
 
     public string? FocusedId => Automation.FocusedElement()?.AutomationId;
 
@@ -146,7 +168,7 @@ public sealed class SnoopApp : IDisposable
     }
 
     /// <summary>Waits until <paramref name="condition"/> holds, or fails the test saying what was expected.</summary>
-    public static void WaitUntil(Func<bool> condition, string what, TimeSpan? timeout = null)
+    public static void WaitUntil(Func<bool> condition, string what, TimeSpan? timeout = null, Func<string>? actual = null)
     {
         var limit = timeout ?? Timeout;
         var watch = Stopwatch.StartNew();
@@ -168,7 +190,17 @@ public sealed class SnoopApp : IDisposable
             Thread.Sleep(100);
         }
 
-        Assert.Fail($"Timed out waiting for {what}.");
+        string seen;
+        try
+        {
+            seen = actual?.Invoke() ?? string.Empty;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or NotSupportedException or System.Runtime.InteropServices.COMException or FlaUI.Core.Exceptions.FlaUIException)
+        {
+            seen = $"(could not read the app's state: {ex.Message})";
+        }
+
+        Assert.Fail(seen.Length == 0 ? $"Timed out waiting for {what}." : $"Timed out waiting for {what}. Saw: {seen}");
     }
 
     /// <summary>The clipboard's text (read on an STA thread, as Windows requires).</summary>

@@ -17,6 +17,18 @@ public sealed class KeyboardShortcutTests : IDisposable
 
     public void Dispose() => _snoop.Dispose();
 
+    /// <summary>
+    /// Ctrl+F, then puts the words in the search box through UI Automation (typing isn't what these tests
+    /// are about, and simulated typing can drop characters).
+    /// </summary>
+    private void Search(string words)
+    {
+        SnoopApp.Press(Control, Key('F'));
+        SnoopApp.WaitUntil(() => _snoop.FocusedId == "SearchBox", "Ctrl+F to focus the search box", actual: _snoop.Describe);
+        _snoop.SearchBox.Text = words;
+        SnoopApp.WaitUntil(() => _snoop.SearchBox.Text == words, "the search words to arrive", actual: _snoop.Describe);
+    }
+
     [Fact]
     public void Ctrl_F_goes_to_the_search_box()
     {
@@ -28,33 +40,31 @@ public sealed class KeyboardShortcutTests : IDisposable
     [Fact]
     public void Enter_F3_and_Shift_F3_step_through_matches()
     {
-        SnoopApp.Press(Control, Key('F'));
-        SnoopApp.Type("jsonplaceholder");
-        SnoopApp.WaitUntil(() => _snoop.CountText.StartsWith("6 of 15", StringComparison.Ordinal), "the search to show 6 of 15");
+        Search("jsonplaceholder");
+        SnoopApp.WaitUntil(() => _snoop.CountText.StartsWith("6 of 15", StringComparison.Ordinal), "the search to show 6 of 15", actual: _snoop.Describe);
 
         SnoopApp.Press(Enter);
-        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([0]), "Enter to select the first match");
+        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([0]), "Enter to select the first match", actual: _snoop.Describe);
         SnoopApp.Press(F3);
-        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([1]), "F3 to select the next match");
+        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([1]), "F3 to select the next match", actual: _snoop.Describe);
         SnoopApp.Press(Shift, Enter);
-        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([0]), "Shift+Enter to go back");
+        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([0]), "Shift+Enter to go back", actual: _snoop.Describe);
         SnoopApp.Press(Shift, F3);
-        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([5]), "Shift+F3 to wrap to the last match");
+        SnoopApp.WaitUntil(() => _snoop.SelectedRows.SequenceEqual([5]), "Shift+F3 to wrap to the last match", actual: _snoop.Describe);
     }
 
     [Fact]
     public void Esc_clears_the_search_then_returns_to_the_list()
     {
-        SnoopApp.Press(Control, Key('F'));
-        SnoopApp.Type("httpbin");
-        SnoopApp.WaitUntil(() => _snoop.CountText.StartsWith("3 of 15", StringComparison.Ordinal), "the search to show 3 of 15");
+        Search("httpbin");
+        SnoopApp.WaitUntil(() => _snoop.CountText.StartsWith("3 of 15", StringComparison.Ordinal), "the search to show 3 of 15", actual: _snoop.Describe);
 
         SnoopApp.Press(Escape);
-        SnoopApp.WaitUntil(() => _snoop.SearchBox.Text.Length == 0 && _snoop.CountText == "15 sessions", "Esc to clear the search");
+        SnoopApp.WaitUntil(() => _snoop.SearchBox.Text.Length == 0 && _snoop.CountText == "15 sessions", "Esc to clear the search", actual: _snoop.Describe);
         Assert.Equal("SearchBox", _snoop.FocusedId);
 
         SnoopApp.Press(Escape);
-        SnoopApp.WaitUntil(() => _snoop.FocusedId != "SearchBox", "a second Esc to leave the search box");
+        SnoopApp.WaitUntil(() => _snoop.FocusedId != "SearchBox", "a second Esc to leave the search box", actual: _snoop.Describe);
     }
 
     [Fact]
@@ -110,7 +120,10 @@ public sealed class KeyboardShortcutTests : IDisposable
     {
         _snoop.ClickRow(0);
         SnoopApp.Press(Control, Key('R'));
-        SnoopApp.WaitUntil(() => _snoop.MessageText.Contains("Start capturing first", StringComparison.Ordinal), "Ctrl+R to report that capture is off");
+        SnoopApp.WaitUntil(
+            () => _snoop.MessageText.Contains("Start capturing first", StringComparison.Ordinal),
+            "Ctrl+R to report that capture is off",
+            actual: () => $"message \"{_snoop.MessageText}\", {_snoop.Describe()}");
     }
 
     [Fact]
