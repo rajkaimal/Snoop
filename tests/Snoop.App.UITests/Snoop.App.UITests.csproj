@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Keyboard tests that drive the real Snoop.exe through UI Automation (FlaUI): they press each shortcut
+    and check what happened. Windows only, and they need a desktop session (they move the keyboard focus).
+    Build the app first:   dotnet build src/Snoop.App -c Debug -p:Platform=x64
+    Then run:              dotnet test tests/Snoop.App.UITests
+    Not part of Snoop.slnx, so the cross-platform build and tests stay as they are.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Test helpers talk to COM and Win32 through FlaUI; keep analyzer noise from failing the build. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FlaUI.UIA3" />
+  </ItemGroup>
+
+  <!-- Windows Forms is only here for the clipboard (used fully qualified); its implicit usings would
+       clash with FlaUI's TextBox and with Keys.Control. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -142,6 +142,9 @@ public sealed class SessionRowViewModel(Session session, SessionColumnsViewModel
 
     public string Url => Session.Request.Url.ToString();
 
+    /// <summary>What screen readers and UI tests see for the row, e.g. "#12 GET https://example.com/".</summary>
+    public override string ToString() => $"#{Id} {Method} {Url}";
+
     public string ContentType => ContentSniffer.MediaType(Session.Response?.Headers.Get("Content-Type"));
 
     /// <summary>A short label for the content type: JSON, HTML, JS, CSS, IMG, FONT, TXT, BIN, or TLS for tunnels.</summary>

@@ -179,6 +179,19 @@ dotnet run --project src/Snoop.Cli -- run --system-proxy
 The desktop app is excluded from `dotnet build/test Snoop.slnx`, so a XAML problem can never block the
 tests. Build it on its own with `dotnet build src/Snoop.App` (add `-p:Platform=ARM64` on ARM PCs).
 
+**Keyboard tests.** `tests/Snoop.App.UITests` starts the real `Snoop.exe` and presses every shortcut
+(FlaUI, UI Automation). It runs the app with `--test`, so nothing is captured, the system proxy is not
+touched and all data goes to a temporary folder; the demo snapshot is opened with `--open`. It needs
+Windows and a desktop session (it takes the keyboard for a minute), so it is not part of `Snoop.slnx`:
+
+```powershell
+dotnet build src/Snoop.App -p:Platform=x64
+dotnet test tests/Snoop.App.UITests
+```
+
+A separate check in `Snoop.Presentation.Tests` (runs everywhere) fails when a shortcut in the app and
+the [Keyboard shortcuts](#keyboard-shortcuts) tables above disagree.
+
 Publish a standalone `snoop.exe`:
 
 ```powershell
@@ -287,7 +300,9 @@ tests/
   Snoop.Platform.Tests/   System proxy controller (fake API), proxy settings
   Snoop.Hosting.Tests/    Capture host lifecycle, system proxy follow/restore, trust, skip host, Composer, rules file
   Snoop.Inspection.Tests/ Decoding, sniffing, formatting, cURL/PowerShell/HAR export, filters
-  Snoop.Presentation.Tests/ Session grid, inspector, Composer, Rules, Breakpoints, snapshots, message editing
+  Snoop.Presentation.Tests/ Session grid, inspector, Composer, Rules, Breakpoints, snapshots, message editing,
+                          and the README's keyboard shortcut tables against the app
+  Snoop.App.UITests/      Presses every keyboard shortcut in the running app (Windows only; see above)
   Snoop.Cli.Tests/        Command-line parsing, session line formatting
 ```
 

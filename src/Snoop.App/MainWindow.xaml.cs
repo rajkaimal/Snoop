@@ -25,14 +25,17 @@ public sealed partial class MainWindow : Window
     private bool _settingsOpen;
     private double? _listWidth;
 
-    public MainWindow(CaptureHost host)
+    private readonly LaunchOptions _options;
+
+    public MainWindow(CaptureHost host, LaunchOptions? options = null)
     {
+        _options = options ?? new LaunchOptions();
         ViewModel = new MainViewModel(
             host,
             new WinUiDispatcher(DispatcherQueue),
             new WinUiClipboard(),
             new WinUiFileSaveService(this),
-            AppSettings.Load(),
+            _options.Adjust(AppSettings.Load()),
             AppSettings.DefaultPath,
             new WinUiFileOpenService(this),
             RulesFile.DefaultPath,
@@ -40,7 +43,7 @@ public sealed partial class MainWindow : Window
 
         InitializeComponent();
 
-        AppWindow.Title = "Snoop";
+        AppWindow.Title = _options.TestMode ? "Snoop (test)" : "Snoop";
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1500, 900));
         AppWindow.Closing += OnClosing;
 
@@ -284,6 +287,10 @@ public sealed partial class MainWindow : Window
         try
         {
             await ViewModel.InitializeAsync();
+            if (_options.OpenPath is { } path)
+            {
+                ViewModel.OpenFile(path);
+            }
         }
 #pragma warning disable CA1031 // Shown in the info bar by the view model; never crash on startup.
         catch (Exception ex)

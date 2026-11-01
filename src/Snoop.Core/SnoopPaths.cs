@@ -3,9 +3,17 @@ namespace Snoop.Core;
 /// <summary>Well-known folders used by Snoop.</summary>
 public static class SnoopPaths
 {
-    /// <summary><c>%APPDATA%\Snoop</c>: settings, rules, the root certificate authority.</summary>
+    /// <summary>Environment variable that moves <see cref="AppDataDirectory"/> elsewhere (used by the UI tests).</summary>
+    public const string DataDirectoryVariable = "SNOOP_DATA_DIR";
+
+    /// <summary>
+    /// <c>%APPDATA%\Snoop</c>: settings, rules, saved requests, the root certificate authority. The
+    /// <c>SNOOP_DATA_DIR</c> environment variable, when set, points it somewhere else.
+    /// </summary>
     public static string AppDataDirectory { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Snoop");
+        Environment.GetEnvironmentVariable(DataDirectoryVariable) is { Length: > 0 } custom
+            ? Path.GetFullPath(custom)
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Snoop");
 
     /// <summary><c>%TEMP%\Snoop</c>: spilled bodies for the running capture.</summary>
     public static string DefaultTempDirectory { get; } = Path.Combine(Path.GetTempPath(), "Snoop");

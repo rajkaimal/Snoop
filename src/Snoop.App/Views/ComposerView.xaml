@@ -98,6 +98,8 @@
             <TextBox
                 Grid.Column="1"
                 Text="{x:Bind ViewModel.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                AutomationProperties.AutomationId="ComposerUrl"
+                AutomationProperties.Name="URL"
                 PlaceholderText="https://example.com/api, {{baseUrl}}/users, or paste a cURL command"
                 FontFamily="{StaticResource MonoFont}"
                 IsSpellCheckEnabled="False"
@@ -291,6 +293,7 @@
                     <ProgressRing IsActive="{x:Bind ViewModel.IsSending, Mode=OneWay}" Width="16" Height="16" />
                     <TextBlock
                         Text="{x:Bind ViewModel.ResultText, Mode=OneWay}"
+                        AutomationProperties.AutomationId="ComposerResult"
                         Foreground="{x:Bind helpers:UiHelpers.MessageBrush(ViewModel.ResultIsError), Mode=OneWay}"
                         TextWrapping="Wrap"
                         FontSize="12"

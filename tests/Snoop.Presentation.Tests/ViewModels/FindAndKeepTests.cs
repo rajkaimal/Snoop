@@ -284,3 +284,30 @@ public sealed class ShortcutTests : IAsyncLifetime
         Assert.False(_vm.ResendCommand.CanExecute(null));
     }
 }
+
+public sealed class LaunchOptionsTests
+{
+    [Fact]
+    public void Reads_test_open_and_restore()
+    {
+        var options = LaunchOptions.Parse(["--test", "--open", @"C:\x\demo.snoop"]);
+        Assert.True(options.TestMode);
+        Assert.Equal(@"C:\x\demo.snoop", options.OpenPath);
+        Assert.False(options.RestoreProxy);
+
+        Assert.True(LaunchOptions.Parse(["RESTORE-PROXY"]).RestoreProxy);
+        Assert.Equal("a.har", LaunchOptions.Parse(["a.har"]).OpenPath);
+        Assert.Null(LaunchOptions.Parse(["--open"]).OpenPath);
+        Assert.False(LaunchOptions.Parse(["--unknown"]).TestMode);
+    }
+
+    [Fact]
+    public void Test_mode_never_captures_or_sets_the_proxy()
+    {
+        var settings = new AppSettings { CaptureOnStartup = true, UseSystemProxy = true };
+        var adjusted = new LaunchOptions { TestMode = true }.Adjust(settings);
+        Assert.False(adjusted.CaptureOnStartup);
+        Assert.False(adjusted.UseSystemProxy);
+        Assert.Same(settings, new LaunchOptions().Adjust(settings));
+    }
+}

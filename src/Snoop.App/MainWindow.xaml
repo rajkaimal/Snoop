@@ -78,6 +78,7 @@
                     </Button>
                     <TextBox
                         x:Name="SearchBox"
+                        AutomationProperties.AutomationId="SearchBox"
                         PlaceholderText="Search URLs, headers and bodies (Ctrl+F)"
                         Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         KeyDown="OnSearchKeyDown"
@@ -244,6 +245,8 @@
                 </InfoBar.ActionButton>
             </InfoBar>
             <InfoBar
+                AutomationProperties.AutomationId="MessageBar"
+                AutomationProperties.Name="{x:Bind ViewModel.Message, Mode=OneWay}"
                 IsOpen="{x:Bind ViewModel.HasMessage, Mode=OneWay}"
                 Severity="{x:Bind helpers:UiHelpers.Severity(ViewModel.MessageIsError), Mode=OneWay}"
                 Message="{x:Bind ViewModel.Message, Mode=OneWay}"
@@ -349,6 +352,8 @@
 
                 <ListView
                     x:Name="SessionList"
+                    AutomationProperties.AutomationId="SessionList"
+                    AutomationProperties.Name="Sessions"
                     Grid.Row="1"
                     ItemsSource="{x:Bind ViewModel.Sessions.Rows, Mode=OneWay}"
                     SelectionMode="Extended"
@@ -503,10 +508,12 @@
                     <!-- Heading: the tool's name, or the selected session for Inspect. -->
                     <TextBlock
                         Text="{x:Bind ViewModel.CardTitle, Mode=OneWay}"
+                        AutomationProperties.AutomationId="ToolTitle"
                         Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(ViewModel.IsToolMode), Mode=OneWay}"
                         Style="{StaticResource CardTitle}" />
                     <TextBlock
                         Text="{x:Bind ViewModel.Inspector.Title, Mode=OneWay}"
+                        AutomationProperties.AutomationId="InspectorTitle"
                         Visibility="{x:Bind helpers:UiHelpers.VisibleWhen(ViewModel.IsInspectorTab), Mode=OneWay}"
                         Style="{StaticResource CardTitle}"
                         IsTextSelectionEnabled="True" />
@@ -580,7 +587,7 @@
             </Grid.ColumnDefinitions>
             <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{x:Bind helpers:UiHelpers.CaptureBrush(ViewModel.IsCapturing), Mode=OneWay}" />
             <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.CountText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" AutomationProperties.AutomationId="CountText" Text="{x:Bind ViewModel.CountText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Window>

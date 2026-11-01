@@ -986,15 +986,22 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
             return;
         }
 
+        OpenFile(path);
+    }
+
+    /// <summary>Adds the sessions in a snapshot or HAR file and says how it went (also used by --open).</summary>
+    public void OpenFile(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
         try
         {
             (int Added, int Skipped) result;
-            var stream = File.OpenRead(path);
-            await using (stream.ConfigureAwait(true))
+            using (var stream = File.OpenRead(path))
             {
                 result = _host.OpenCaptureFile(stream);
             }
 
+            Sessions.ApplyPendingChanges();
             var skipped = result.Skipped > 0 ? $" ({result.Skipped:N0} entries could not be read)" : string.Empty;
             SetMessage($"Added {result.Added:N0} session(s) from {Path.GetFileName(path)}{skipped}.", isError: false);
         }
