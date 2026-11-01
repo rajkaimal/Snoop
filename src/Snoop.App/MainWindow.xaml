@@ -22,6 +22,13 @@
             <KeyboardAccelerator Modifiers="Control" Key="Number4" Invoked="OnToolShortcut" />
             <KeyboardAccelerator Modifiers="Control" Key="Number5" Invoked="OnToolShortcut" />
             <KeyboardAccelerator Modifiers="Control" Key="Number6" Invoked="OnToolShortcut" />
+            <KeyboardAccelerator Key="F3" Invoked="OnFindNextInvoked" />
+            <KeyboardAccelerator Modifiers="Shift" Key="F3" Invoked="OnFindNextInvoked" />
+            <KeyboardAccelerator Modifiers="Control" Key="L" Invoked="OnClearInvoked" />
+            <KeyboardAccelerator Modifiers="Control" Key="E" Invoked="OnEditInComposerInvoked" />
+            <KeyboardAccelerator Modifiers="Control" Key="R" Invoked="OnResendInvoked" />
+            <KeyboardAccelerator Modifiers="Menu" Key="Left" Invoked="OnHistoryInvoked" />
+            <KeyboardAccelerator Modifiers="Menu" Key="Right" Invoked="OnHistoryInvoked" />
         </Grid.KeyboardAccelerators>
         <Grid.Resources>
             <DataTemplate x:Key="OverviewTemplate" x:DataType="vm:NameValueRow">
@@ -177,7 +184,7 @@
 
             <AppBarSeparator />
 
-            <AppBarButton Label="Clear" Command="{x:Bind ViewModel.ClearCommand}" ToolTipService.ToolTip="Remove every session">
+            <AppBarButton Label="Clear" Command="{x:Bind ViewModel.ClearCommand}" ToolTipService.ToolTip="Remove every session (Ctrl+L)">
                 <AppBarButton.Icon>
                     <FontIcon Glyph="&#xE894;" />
                 </AppBarButton.Icon>
@@ -353,11 +360,12 @@
                     ItemContainerStyle="{StaticResource CompactListItemStyle}">
                     <ListView.ContextFlyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="Copy URL" Command="{x:Bind ViewModel.CopyUrlCommand}" />
-                            <MenuFlyoutItem Text="Copy as cURL" Command="{x:Bind ViewModel.CopyCurlCommand}" />
+                            <MenuFlyoutItem Text="Copy URL" Command="{x:Bind ViewModel.CopyUrlCommand}" KeyboardAcceleratorTextOverride="Ctrl+C" />
+                            <MenuFlyoutItem Text="Copy as cURL" Command="{x:Bind ViewModel.CopyCurlCommand}" KeyboardAcceleratorTextOverride="Ctrl+Shift+C" />
                             <MenuFlyoutItem Text="Copy as PowerShell" Command="{x:Bind ViewModel.CopyPowerShellCommand}" />
                             <MenuFlyoutSeparator />
-                            <MenuFlyoutItem Text="Edit in Composer" Command="{x:Bind ViewModel.EditInComposerCommand}" />
+                            <MenuFlyoutItem Text="Send again" Command="{x:Bind ViewModel.ResendCommand}" KeyboardAcceleratorTextOverride="Ctrl+R" />
+                            <MenuFlyoutItem Text="Edit in Composer" Command="{x:Bind ViewModel.EditInComposerCommand}" KeyboardAcceleratorTextOverride="Ctrl+E" />
                             <MenuFlyoutItem Text="Auto-respond with this response (new rule)" Command="{x:Bind ViewModel.CreateRuleCommand}" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem Text="Mark for compare" Command="{x:Bind ViewModel.MarkForCompareCommand}" />

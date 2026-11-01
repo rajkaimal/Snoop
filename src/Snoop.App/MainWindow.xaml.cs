@@ -350,17 +350,40 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>In the search box, Enter selects the next shown session and Shift+Enter the previous one.</summary>
+    /// <summary>
+    /// In the search box, Enter selects the next shown session and Shift+Enter the previous one; Esc clears
+    /// the search (a second Esc goes back to the list).
+    /// </summary>
     private void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (e.Key == Windows.System.VirtualKey.Escape)
+        {
+            if (ViewModel.SearchText.Length > 0)
+            {
+                ViewModel.SearchText = string.Empty;
+            }
+            else
+            {
+                SessionList.Focus(FocusState.Keyboard);
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key != Windows.System.VirtualKey.Enter)
         {
             return;
         }
 
-        var shift = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Shift)
-            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
-        var row = ViewModel.Sessions.SelectAdjacent(shift ? -1 : 1);
+        StepThroughMatches(IsDown(Windows.System.VirtualKey.Shift) ? -1 : 1);
+        e.Handled = true;
+    }
+
+    /// <summary>Selects the next (or previous) shown session and makes sure it is in view and inspected.</summary>
+    private void StepThroughMatches(int step)
+    {
+        var row = ViewModel.Sessions.SelectAdjacent(step);
         if (row is not null)
         {
             SessionList.ScrollIntoView(row);
@@ -369,8 +392,84 @@ public sealed partial class MainWindow : Window
                 ViewModel.SelectedTabIndex = MainViewModel.InspectorsTab;
             }
         }
+    }
 
-        e.Handled = true;
+    private static bool IsDown(Windows.System.VirtualKey key) =>
+        Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+
+    /// <summary>F3 / Shift+F3: next / previous match, from anywhere.</summary>
+    private void OnFindNextInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        StepThroughMatches(sender.Modifiers.HasFlag(Windows.System.VirtualKeyModifiers.Shift) ? -1 : 1);
+        args.Handled = true;
+    }
+
+    /// <summary>
+    /// True while typing in a text box: list shortcuts (Ctrl+L, Ctrl+E, Ctrl+R, Alt+arrows) then do nothing,
+    /// so they cannot clear the list or replace a Composer request mid-edit.
+    /// </summary>
+    private bool IsTyping() =>
+        Content.XamlRoot is { } root
+        && Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(root) is TextBox or RichEditBox or PasswordBox or AutoSuggestBox;
+
+    /// <summary>Ctrl+L clears the list, like clearing a terminal or a browser console.</summary>
+    private void OnClearInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (IsTyping())
+        {
+            return;
+        }
+
+        ViewModel.ClearCommand.Execute(null);
+        args.Handled = true;
+    }
+
+    private void OnEditInComposerInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (IsTyping())
+        {
+            return;
+        }
+
+        if (ViewModel.EditInComposerCommand.CanExecute(null))
+        {
+            ViewModel.EditInComposerCommand.Execute(null);
+        }
+
+        args.Handled = true;
+    }
+
+    /// <summary>Ctrl+R sends the selected request(s) again, like reloading a page.</summary>
+    private void OnResendInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (IsTyping())
+        {
+            return;
+        }
+
+        if (ViewModel.ResendCommand.CanExecute(null))
+        {
+            ViewModel.ResendCommand.Execute(null);
+        }
+
+        args.Handled = true;
+    }
+
+    /// <summary>Alt+Left / Alt+Right: back and forward through the sessions you looked at.</summary>
+    private void OnHistoryInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        if (IsTyping())
+        {
+            return;
+        }
+
+        var row = sender.Key == Windows.System.VirtualKey.Left ? ViewModel.Sessions.GoBack() : ViewModel.Sessions.GoForward();
+        if (row is not null)
+        {
+            SessionList.ScrollIntoView(row);
+        }
+
+        args.Handled = true;
     }
 
     /// <summary>Opening the context menu (right-click, Shift+F10, menu key) selects the row it was opened on.</summary>
@@ -492,12 +591,25 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>Delete removes the selected session, but only while the session list has focus.</summary>
+    /// <summary>
+    /// While the session list has focus: Delete removes the selected sessions, Ctrl+C copies their URLs and
+    /// Ctrl+Shift+C copies them as cURL (so Ctrl+C keeps its normal meaning in text boxes).
+    /// </summary>
     private void OnSessionListKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Delete && ViewModel.RemoveSelectedCommand.CanExecute(null))
         {
             ViewModel.RemoveSelectedCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (e.Key == Windows.System.VirtualKey.C && IsDown(Windows.System.VirtualKey.Control))
+        {
+            var command = IsDown(Windows.System.VirtualKey.Shift) ? ViewModel.CopyCurlCommand : ViewModel.CopyUrlCommand;
+            if (command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+
             e.Handled = true;
         }
     }

@@ -130,6 +130,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 OnPropertyChanged(nameof(CountText));
                 OnPropertyChanged(nameof(RemoveText));
                 ExportSelectedHarCommand?.NotifyCanExecuteChanged();
+                ResendCommand?.NotifyCanExecuteChanged();
                 ExportSelectedTextCommand?.NotifyCanExecuteChanged();
                 SaveSelectedSnapshotCommand?.NotifyCanExecuteChanged();
             }
@@ -139,9 +140,10 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         ToggleCaptureCommand = new AsyncRelayCommand(ToggleCaptureAsync, ShowError);
         ClearCommand = new RelayCommand(() => Sessions.Clear());
         TrustRootCommand = new RelayCommand(TrustRoot, () => _host.IsRootTrustSupported);
-        CopyUrlCommand = new RelayCommand(() => CopySelected(r => r.Url), HasSelection);
-        CopyCurlCommand = new RelayCommand(() => CopySelected(r => CommandExporter.ToCurl(r.Session.Request)), HasSelection);
-        CopyPowerShellCommand = new RelayCommand(() => CopySelected(r => CommandExporter.ToPowerShell(r.Session.Request)), HasSelection);
+        CopyUrlCommand = new RelayCommand(() => CopySelected(r => r.Url, "\n"), HasSelection);
+        CopyCurlCommand = new RelayCommand(() => CopySelected(r => CommandExporter.ToCurl(r.Session.Request), "\n\n"), HasSelection);
+        CopyPowerShellCommand = new RelayCommand(() => CopySelected(r => CommandExporter.ToPowerShell(r.Session.Request), "\n\n"), HasSelection);
+        ResendCommand = new AsyncRelayCommand(ResendSelectedAsync, ShowError, () => ResendableRows().Count > 0);
         RemoveSelectedCommand = new RelayCommand(RemoveSelected, HasSelection);
         ExportSelectedHarCommand = new AsyncRelayCommand(() => ExportHarAsync(redact: false, selectedOnly: true), ShowError, HasSelection);
         ExportSelectedTextCommand = new AsyncRelayCommand(() => ExportTextAsync(selectedOnly: true), ShowError, HasSelection);
@@ -382,6 +384,9 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     public AsyncRelayCommand LoadSnapshotCommand { get; }
 
     public RelayCommand EditInComposerCommand { get; }
+
+    /// <summary>Sends the selected request(s) again exactly as captured (Ctrl+R). The copies are new sessions.</summary>
+    public AsyncRelayCommand ResendCommand { get; }
 
     public RelayCommand CreateRuleCommand { get; }
 
@@ -828,16 +833,30 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         RefreshTrust();
     }
 
-    private void CopySelected(Func<SessionRowViewModel, string> text)
+    /// <summary>The selected rows in the order shown (the inspected one alone when nothing else is selected).</summary>
+    private List<SessionRowViewModel> SelectedRowsInOrder()
     {
-        if (Sessions.SelectedRow is not { } row)
+        if (Sessions.SelectedRows.Count <= 1)
+        {
+            return Sessions.SelectedRow is { } row ? [row] : [];
+        }
+
+        var wanted = Sessions.SelectedRows.ToHashSet();
+        return [.. Sessions.Rows.Where(wanted.Contains)];
+    }
+
+    /// <summary>Copies something about every selected session, one after another.</summary>
+    private void CopySelected(Func<SessionRowViewModel, string> text, string separator)
+    {
+        var rows = SelectedRowsInOrder();
+        if (rows.Count == 0)
         {
             return;
         }
 
         try
         {
-            _clipboard.SetText(text(row));
+            _clipboard.SetText(string.Join(separator, rows.Select(text)));
         }
 #pragma warning disable CA1031 // The clipboard can be locked by another app; report it, don't crash.
         catch (Exception ex)
@@ -983,6 +1002,44 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         {
             SetMessage($"Could not open {Path.GetFileName(path)}: {ex.Message}", isError: true);
         }
+    }
+
+    private List<SessionRowViewModel> ResendableRows() =>
+        [.. SelectedRowsInOrder().Where(r => r.Session.Kind == Core.Sessions.SessionKind.Http)];
+
+    private async Task ResendSelectedAsync()
+    {
+        var rows = ResendableRows();
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        if (!_host.IsRunning)
+        {
+            SetMessage("Start capturing first: requests are sent again through Snoop.", isError: true);
+            return;
+        }
+
+        var sent = new List<string>();
+        foreach (var row in rows)
+        {
+            if (ComposerViewModel.FromCapturedRequest(row.Session.Request, out var error) is not { } request)
+            {
+                SetMessage($"#{row.Id.ToString(CultureInfo.InvariantCulture)} cannot be sent again: {error}", isError: true);
+                return;
+            }
+
+            var result = await _host.SendComposedAsync(request, CancellationToken.None).ConfigureAwait(true);
+            var outcome = result.StatusCode is { } code
+                ? $"{code.ToString(CultureInfo.InvariantCulture)} {result.ReasonPhrase}".TrimEnd()
+                : result.Error ?? "no response";
+            sent.Add(result.Session is { } copy
+                ? $"#{row.Id.ToString(CultureInfo.InvariantCulture)} as #{copy.Id.ToString(CultureInfo.InvariantCulture)} ({outcome})"
+                : $"#{row.Id.ToString(CultureInfo.InvariantCulture)} ({outcome})");
+        }
+
+        SetMessage(rows.Count == 1 ? $"Sent {sent[0]} again." : $"Sent {rows.Count} requests again: {string.Join(", ", sent)}.", isError: false);
     }
 
     private void EditInComposer()
@@ -1204,6 +1261,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         SkipHostCommand.NotifyCanExecuteChanged();
         EditInComposerCommand.NotifyCanExecuteChanged();
         CreateRuleCommand.NotifyCanExecuteChanged();
+        ResendCommand.NotifyCanExecuteChanged();
         ExportSelectedHarCommand.NotifyCanExecuteChanged();
         ExportSelectedTextCommand.NotifyCanExecuteChanged();
         SaveSelectedSnapshotCommand.NotifyCanExecuteChanged();

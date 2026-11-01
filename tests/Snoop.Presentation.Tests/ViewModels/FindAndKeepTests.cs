@@ -181,3 +181,106 @@ public sealed class FindAndKeepTests : IAsyncLifetime
         Assert.Equal(1, _vm.Sessions.VisibleCount);
     }
 }
+
+/// <summary>The keyboard shortcuts' view-model side: history, sending again, copying several.</summary>
+public sealed class ShortcutTests : IAsyncLifetime
+{
+    private readonly FakeDispatcher _dispatcher = new();
+    private readonly FakeClipboard _clipboard = new();
+    private TestHost _test = null!;
+    private MainViewModel _vm = null!;
+
+    public Task InitializeAsync()
+    {
+        _test = new TestHost();
+        var settings = new AppSettings { Port = 0, CaptureOnStartup = false, HideTunnels = false };
+        _vm = new MainViewModel(_test.Host, _dispatcher, _clipboard, new FakeFiles(), settings, null, null, null);
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _vm.ShutdownAsync();
+        _vm.Sessions.Dispose();
+        await _test.DisposeAsync();
+    }
+
+    private void AddThree()
+    {
+        _test.AddSession("http://resend.test/one");
+        _test.AddSession("http://resend.test/two");
+        _test.AddSession("http://resend.test/three");
+        _dispatcher.Tick();
+    }
+
+    [Fact]
+    public void Back_and_forward_through_selected_sessions()
+    {
+        AddThree();
+        var rows = _vm.Sessions.Rows;
+        _vm.Sessions.SelectedRow = rows[0];
+        _vm.Sessions.SelectedRow = rows[2];
+        _vm.Sessions.SelectedRow = rows[1];
+
+        Assert.Same(rows[2], _vm.Sessions.GoBack());
+        Assert.Same(rows[0], _vm.Sessions.GoBack());
+        Assert.Null(_vm.Sessions.GoBack());
+        Assert.Same(rows[2], _vm.Sessions.GoForward());
+        Assert.Same(rows[1], _vm.Sessions.GoForward());
+        Assert.Null(_vm.Sessions.GoForward());
+
+        // A new selection drops the forward history; hidden sessions are skipped.
+        Assert.Same(rows[2], _vm.Sessions.GoBack());
+        _vm.SearchText = "one";
+        Assert.Same(rows[0], _vm.Sessions.GoBack());
+    }
+
+    [Fact]
+    public void Copy_url_and_curl_for_every_selected_session()
+    {
+        AddThree();
+        _vm.Sessions.SelectedRows = [_vm.Sessions.Rows[2], _vm.Sessions.Rows[0]];
+        _vm.Sessions.SelectedRow = _vm.Sessions.Rows[2];
+
+        _vm.CopyUrlCommand.Execute(null);
+        Assert.Equal("http://resend.test/one\nhttp://resend.test/three", _clipboard.Text);
+
+        _vm.CopyCurlCommand.Execute(null);
+        Assert.Equal(2, _clipboard.Text!.Split("\n\n").Length);
+    }
+
+    [Fact]
+    public async Task Send_again_needs_capture_then_records_a_new_session()
+    {
+        AddThree();
+        _vm.Sessions.SelectedRow = _vm.Sessions.Rows[1];
+        var originalId = _vm.Sessions.Rows[1].Id;
+        Assert.True(_vm.ResendCommand.CanExecute(null));
+
+        await _vm.ResendCommand.ExecuteAsync();
+        Assert.True(_vm.MessageIsError);
+        Assert.Contains("Start capturing", _vm.Message, StringComparison.Ordinal);
+
+        await _test.Host.StartAsync(new Snoop.Hosting.CaptureSettings { Port = 0 });
+        _test.Host.Rules.Replace([new Snoop.Proxy.Rules.TrafficRule { Pattern = "resend.test", Actions = [new Snoop.Proxy.Rules.RuleAction(Snoop.Proxy.Rules.RuleActionKind.Respond, "200", "again")] }]);
+        await _vm.ResendCommand.ExecuteAsync();
+        _dispatcher.Tick();
+
+        Assert.False(_vm.MessageIsError, _vm.Message);
+        Assert.StartsWith($"Sent #{originalId} as #", _vm.Message, StringComparison.Ordinal);
+        Assert.Contains("(200 OK)", _vm.Message, StringComparison.Ordinal);
+        Assert.Equal(4, _vm.Sessions.TotalCount);
+        var copy = Assert.Single(_vm.Sessions.Rows, r => r.Session.Flags.HasFlag(SessionFlags.Composed)).Session;
+        Assert.Equal("http://resend.test/two", copy.Request.Url.AbsoluteUri);
+        Assert.True(copy.Flags.HasFlag(SessionFlags.Composed));
+    }
+
+    [Fact]
+    public void Tunnels_cannot_be_sent_again()
+    {
+        _test.AddSession("https://tunnel.test:443/", kind: SessionKind.Connect);
+        _dispatcher.Tick();
+        _vm.Sessions.SelectedRow = _vm.Sessions.Rows[0];
+        Assert.False(_vm.ResendCommand.CanExecute(null));
+    }
+}

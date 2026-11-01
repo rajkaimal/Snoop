@@ -5,7 +5,7 @@ on your PC. It runs a local intercepting proxy, decrypts HTTPS with a root certi
 your machine, and shows every request and response as it happens. It comes as a desktop app
 (`Snoop.exe`, WinUI 3) and a command-line tool (`snoop.exe`).
 
-![Snoop: the session list with results coloured by status, and the selected request's headers in the inspector](docs/screenshot.png)
+![Snoop: the session list with results coloured by status, and the selected session's request headers and colour-highlighted JSON response in the inspector](docs/screenshot.png)
 
 To look around without capturing anything, open [`docs/demo.snoop`](docs/demo.snoop) with Ctrl+O: 15 sample
 sessions with JSON, HTML, an image, cache hits and errors, a WebSocket, a rule-answered request and a Composer request.
@@ -43,7 +43,7 @@ several sessions; Ctrl+A selects all. Click a header to sort (again to
 reverse, a third time for arrival order), drag a header edge to resize, right-click the header to show or
 hide columns. When the list is empty it says why and what to do.
 
-Right-click a session: copy URL / cURL / PowerShell, Edit in Composer, Auto-respond with this response,
+Right-click a session: copy URL / cURL / PowerShell, Send again, Edit in Composer, Auto-respond with this response,
 show only this host or app, export the selected sessions (HAR, text or snapshot),
 Mark for compare / Compare with marked, Don't decrypt this host, Remove (Del). You can also drag a
 session onto the details pane to open it in the Composer.
@@ -93,6 +93,52 @@ and response as readable text, with compressed bodies decoded.
 servers answer with gzip or brotli instead (turn it off in Settings, or with `--keep-zstd`).
 
 A banner offers to trust the Snoop root certificate when HTTPS decryption needs it.
+
+## Keyboard shortcuts
+
+Shortcuts also appear next to their menu items and in tooltips.
+
+**Anywhere in the window**
+
+| Keys | Does |
+| --- | --- |
+| Ctrl+F | Go to the search box |
+| F3 / Shift+F3 | Select the next / previous shown session (the next search match) |
+| Ctrl+1 … Ctrl+6 | Open a tool: Inspect, Composer, Rules, Breakpoints, Timeline, Compare |
+| Ctrl+S | Save the shown sessions as a snapshot (in the Composer: save the request) |
+| Ctrl+O | Open a snapshot or a HAR file |
+| Ctrl+L | Clear the session list |
+| Ctrl+R | Send the selected request(s) again, unchanged (needs capture running) |
+| Ctrl+E | Edit the selected request in the Composer |
+| Alt+← / Alt+→ | Back / forward through the sessions you have looked at |
+
+Ctrl+L, Ctrl+R, Ctrl+E and Alt+arrows do nothing while you are typing in a text box.
+
+**Search box**
+
+| Keys | Does |
+| --- | --- |
+| Enter / Shift+Enter | Select the next / previous match |
+| Esc | Clear the search; press again to go back to the list |
+
+**Session list**
+
+| Keys | Does |
+| --- | --- |
+| ↑ / ↓, Home / End | Move the selection |
+| Ctrl+click, Shift+click, Ctrl+A | Select several sessions / all sessions |
+| Ctrl+C | Copy the selected sessions' URLs |
+| Ctrl+Shift+C | Copy the selected sessions as cURL commands |
+| Delete | Remove the selected sessions |
+| Double-click | Show the session in the inspector, whichever tool is open |
+| Shift+F10 or the Menu key | Open the right-click menu |
+
+**Composer**
+
+| Keys | Does |
+| --- | --- |
+| Ctrl+Enter | Send the request |
+| Ctrl+S | Save the request (asks for a name the first time) |
 
 ## What works today
 

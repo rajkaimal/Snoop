@@ -27,6 +27,12 @@ public sealed class SessionListViewModel : ObservableObject, IDisposable
     private IReadOnlyList<SessionRowViewModel> _selectedRows = [];
     private HashSet<long> _selectedIds = [];
     private bool _selectionPruned;
+    private readonly List<long> _back = [];
+    private readonly List<long> _forward = [];
+    private bool _navigating;
+
+    /// <summary>How many sessions back (and forward) the selection history remembers.</summary>
+    public const int HistoryLength = 100;
     private SessionFilter _filter = SessionFilter.None;
     private bool _autoScroll = true;
     private SessionSort _sort = SessionSort.Default;
@@ -114,11 +120,63 @@ public sealed class SessionListViewModel : ObservableObject, IDisposable
         get => _selectedRow;
         set
         {
+            var previous = _selectedRow;
             if (SetProperty(ref _selectedRow, value))
             {
+                // Remember where we came from, like a browser's back button.
+                if (!_navigating && previous is not null && value is not null)
+                {
+                    _back.Add(previous.Id);
+                    if (_back.Count > HistoryLength)
+                    {
+                        _back.RemoveAt(0);
+                    }
+
+                    _forward.Clear();
+                }
+
                 SelectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+    }
+
+    /// <summary>Selects the session looked at before this one (Alt+Left). Skips sessions no longer shown.</summary>
+    public SessionRowViewModel? GoBack() => Navigate(_back, _forward);
+
+    /// <summary>Undoes <see cref="GoBack"/> (Alt+Right).</summary>
+    public SessionRowViewModel? GoForward() => Navigate(_forward, _back);
+
+    private SessionRowViewModel? Navigate(List<long> from, List<long> to)
+    {
+        while (from.Count > 0)
+        {
+            var id = from[^1];
+            from.RemoveAt(from.Count - 1);
+            if (!_visible.Contains(id) || !_rows.TryGetValue(id, out var row) || ReferenceEquals(row, _selectedRow))
+            {
+                continue;
+            }
+
+            if (_selectedRow is { } current)
+            {
+                to.Add(current.Id);
+            }
+
+            _navigating = true;
+            try
+            {
+                SelectedRows = [row];
+                SelectedRow = row;
+            }
+            finally
+            {
+                _navigating = false;
+            }
+
+            return row;
+        }
+
+        return null;
     }
 
     /// <summary>

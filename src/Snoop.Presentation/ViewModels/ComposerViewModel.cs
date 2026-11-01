@@ -458,6 +458,31 @@ public sealed class ComposerViewModel : ObservableObject
         return new ComposedRequest(method, url, headers, body);
     }
 
+    /// <summary>
+    /// A captured request, ready to send again unchanged (Ctrl+R in the session list). Null when it cannot
+    /// be: a body that was too large to keep in full, or not an http(s) URL.
+    /// </summary>
+    internal static ComposedRequest? FromCapturedRequest(RequestInfo request, out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Url.Scheme != Uri.UriSchemeHttp && request.Url.Scheme != Uri.UriSchemeHttps)
+        {
+            error = "only http and https requests can be sent again.";
+            return null;
+        }
+
+        if (request.Body is { } captured && captured.TotalBytes > captured.StoredBytes)
+        {
+            error = "its body was too large to keep in full.";
+            return null;
+        }
+
+        var headers = new HttpHeaderList(request.Headers.Where(h => !SkippedWhenCopying.Contains(h.Name) || string.Equals(h.Name, "Host", StringComparison.OrdinalIgnoreCase)));
+        var body = request.Body is { TotalBytes: > 0 } b ? b.ToArray() : null;
+        error = null;
+        return new ComposedRequest(request.Method, request.Url, headers, body);
+    }
+
     /// <summary>The request as it would be sent, for "Copy as cURL".</summary>
     internal string? BuildCurl(out string? error)
     {
