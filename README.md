@@ -1,5 +1,7 @@
 # Snoop
 
+[![CI](https://github.com/rajkaimal/Snoop/actions/workflows/ci.yml/badge.svg)](https://github.com/rajkaimal/Snoop/actions/workflows/ci.yml)
+
 Snoop is a Windows tool for watching, debugging and changing the HTTP and HTTPS traffic of the apps
 on your PC. It runs a local intercepting proxy, decrypts HTTPS with a root certificate it creates for
 your machine, and shows every request and response as it happens. It comes as a desktop app
@@ -191,6 +193,10 @@ dotnet test tests/Snoop.App.UITests
 
 A separate check in `Snoop.Presentation.Tests` (runs everywhere) fails when a shortcut in the app and
 the [Keyboard shortcuts](#keyboard-shortcuts) tables above disagree.
+
+**On GitHub.** `.github/workflows/ci.yml` runs on every push and pull request: the cross-platform build and
+tests on Linux, and the desktop app build plus the keyboard tests on Windows. When a keyboard test fails,
+its screenshots are attached to the run as the `ui-test-screenshots` artifact.
 
 Publish a standalone `snoop.exe`:
 

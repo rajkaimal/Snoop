@@ -27,7 +27,30 @@ public sealed partial class KeyboardShortcutDocsTests
     private static readonly HashSet<string> BuiltIn = ["↑", "↓", "Home", "End", "Ctrl+click", "Shift+click", "Ctrl+A", "Shift+F10", "Menu key"];
 
     private static string Root([CallerFilePath] string file = "") =>
-        Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file)!, "..", "..", ".."));
+        FindRoot(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file) ?? ".", "..", "..", "..")));
+
+    /// <summary>
+    /// The repository folder: from this source file's path, or (when a build maps source paths, as CI
+    /// builds may) by walking up from the test binaries to the folder that holds Snoop.slnx.
+    /// </summary>
+    private static string FindRoot(string fromSource)
+    {
+        if (File.Exists(Path.Combine(fromSource, "Snoop.slnx")))
+        {
+            return fromSource;
+        }
+
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Snoop.slnx")))
+            {
+                return directory.FullName;
+            }
+        }
+
+        throw new DirectoryNotFoundException("Could not find the repository (the folder with Snoop.slnx).");
+    }
+
 
     private static string Read(string relative) => File.ReadAllText(Path.Combine(Root(), relative));
 

@@ -222,7 +222,32 @@ public sealed class SnoopApp : IDisposable
             seen = $"(could not read the app's state: {ex.Message})";
         }
 
-        Assert.Fail(seen.Length == 0 ? $"Timed out waiting for {what}." : $"Timed out waiting for {what}. Saw: {seen}");
+        var screenshot = SaveScreenshot(what);
+        var message = seen.Length == 0 ? $"Timed out waiting for {what}." : $"Timed out waiting for {what}. Saw: {seen}";
+        Assert.Fail(screenshot is null ? message : $"{message} Screenshot: {screenshot}");
+    }
+
+    /// <summary>
+    /// Saves a picture of the screen when a test fails, so a failure on a build machine can be seen.
+    /// Goes to SNOOP_UITEST_SCREENSHOTS (set by the CI workflow) or a "screenshots" folder next to the tests.
+    /// </summary>
+    private static string? SaveScreenshot(string what)
+    {
+        try
+        {
+            var folder = Environment.GetEnvironmentVariable("SNOOP_UITEST_SCREENSHOTS") is { Length: > 0 } configured
+                ? configured
+                : Path.Combine(AppContext.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(folder);
+            var name = new string(what.Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');
+            var path = Path.Combine(folder, $"{DateTime.Now:HHmmss}-{name[..Math.Min(name.Length, 60)]}.png");
+            FlaUI.Core.Capturing.Capture.Screen().ToFile(path);
+            return path;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception or ArgumentException)
+        {
+            return null;
+        }
     }
 
     /// <summary>The clipboard's text (read on an STA thread, as Windows requires).</summary>
@@ -311,7 +336,30 @@ public sealed class SnoopApp : IDisposable
     }
 
     private static string RepoRoot([CallerFilePath] string file = "") =>
-        Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file)!, "..", ".."));
+        FindRoot(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file) ?? ".", "..", "..")));
+
+    /// <summary>
+    /// The repository folder: from this source file's path, or (when a build maps source paths, as CI
+    /// builds may) by walking up from the test binaries to the folder that holds Snoop.slnx.
+    /// </summary>
+    private static string FindRoot(string fromSource)
+    {
+        if (File.Exists(Path.Combine(fromSource, "Snoop.slnx")))
+        {
+            return fromSource;
+        }
+
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Snoop.slnx")))
+            {
+                return directory.FullName;
+            }
+        }
+
+        throw new DirectoryNotFoundException("Could not find the repository (the folder with Snoop.slnx).");
+    }
+
 
     /// <summary>SNOOP_EXE, or the newest Snoop.exe built under src/Snoop.App/bin.</summary>
     private static string FindExe()
